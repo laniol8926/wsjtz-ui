@@ -108,6 +108,12 @@ function DecodeScreen({
         emptyText="No decodes yet — make sure WSJT-Z is running and decoding, and that ~/wsjtz-ui/backend/server.js is running."
         liveTx={status.tx_message}
       />
+      {/* Deliberately no liveTx here, unlike Band Activity/RX Frequency below --
+          this panel is specifically other stations calling CQ (candidates to
+          answer), and should never include our own outgoing CQ. cqMessages is
+          already RX-only (is_cq only comes from a real received Decode
+          message), so this is naturally already correct -- comment is here so
+          it stays that way on a future pass. */}
       <MessagePanel
         title="CQ"
         messages={cqMessages}
