@@ -140,15 +140,13 @@ function MessagePanel({
       <div className="decode-list">
         <table>
           <colgroup>
-            <col style={{ width: "27%" }} />
-            <col style={{ width: "12%" }} />
-            <col style={{ width: "12%" }} />
             <col style={{ width: "14%" }} />
-            <col style={{ width: "35%" }} />
+            <col style={{ width: "14%" }} />
+            <col style={{ width: "16%" }} />
+            <col style={{ width: "56%" }} />
           </colgroup>
           <thead>
             <tr>
-              <th>UTC</th>
               <th>dB</th>
               <th>DT</th>
               <th>Hz</th>
@@ -157,16 +155,21 @@ function MessagePanel({
           </thead>
           <tbody>
             {messages.map((m, i) => {
-              const newBlock = i > 0 && messages[i - 1].utc_ms !== m.utc_ms;
+              // Every row in a block shares the same utc_ms (one FT8 cycle),
+              // so the timestamp only needs to appear once per block -- a
+              // per-row UTC column was redundant and crowded out Message
+              // width (which cut off full callsigns/grids with an ellipsis).
+              // i===0 always gets its own divider too, so the very first/
+              // most-recent block is never shown without a visible timestamp.
+              const newBlock = i === 0 || messages[i - 1].utc_ms !== m.utc_ms;
               return (
                 <Fragment key={i}>
                   {newBlock && (
                     <tr className="time-sep">
-                      <td colSpan={5}>{new Date(m.utc_ms).toISOString().substring(11, 19)} UTC</td>
+                      <td colSpan={4}>{new Date(m.utc_ms).toISOString().substring(11, 19)} UTC</td>
                     </tr>
                   )}
                   <tr className={(m.is_cq ? "cq " : "") + (m.to_me ? "tome " : "")}>
-                    <td>{new Date(m.utc_ms).toISOString().substring(11, 19)}</td>
                     <td>{m.snr}</td>
                     <td>{m.time_sec.toFixed(1)}</td>
                     <td>{Math.round(m.freq_hz)}</td>
@@ -177,7 +180,7 @@ function MessagePanel({
             })}
             {messages.length === 0 && (
               <tr>
-                <td colSpan={5} className="muted">
+                <td colSpan={4} className="muted">
                   {emptyText}
                 </td>
               </tr>
