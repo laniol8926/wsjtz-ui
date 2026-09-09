@@ -80,12 +80,10 @@ select, input {
 
 /* Three simultaneous panels (Band Activity / CQ / RX Frequency, matching
    zbitxd's layout), side by side, instead of one list behind a filter
-   toggle. Band Activity gets more width (flex: 2) since it's the
-   highest-volume list; CQ and RX Frequency share the rest. Each panel
-   scrolls its own table independently. */
+   toggle. Equal thirds -- a narrower RX Frequency panel was clipping its
+   own Message column. Each panel scrolls its own table independently. */
 .panels-row { flex: 1; display: flex; gap: 10px; min-height: 0; }
-.panel-band { flex: 2; display: flex; flex-direction: column; min-height: 0; }
-.panel-col { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.panel-band, .panel-col { flex: 1 1 33.333%; display: flex; flex-direction: column; min-height: 0; min-width: 0; }
 .panel-header {
   font-size: 11px; color: var(--muted); text-transform: uppercase;
   letter-spacing: 0.5px; padding-bottom: 4px; border-bottom: 1px solid var(--border);
