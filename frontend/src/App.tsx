@@ -106,6 +106,7 @@ function DecodeScreen({
         messages={messages}
         className="panel-band"
         emptyText="No decodes yet — make sure WSJT-Z is running and decoding, and that ~/wsjtz-ui/backend/server.js is running."
+        liveTx={status.tx_message}
       />
       <MessagePanel
         title="CQ"
