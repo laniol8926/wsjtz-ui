@@ -24,7 +24,7 @@ html, body, #root {
   background: var(--bg);
   color: var(--text);
   font-family: "Segoe UI", system-ui, sans-serif;
-  font-size: 13px;
+  font-size: 12px;
 }
 
 #root { display: flex; flex-direction: column; }
@@ -36,7 +36,7 @@ button {
   border-radius: 6px;
   padding: 6px 12px;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 12px;
 }
 button:hover { background: #2c3a48; }
 button.primary { background: var(--accent); border-color: var(--accent); color: #04121f; font-weight: 600; }
@@ -49,7 +49,7 @@ select, input {
   border: 1px solid var(--border);
   border-radius: 6px;
   padding: 6px 8px;
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .topbar {
@@ -99,8 +99,11 @@ select, input {
 .chip { padding: 4px 10px; border-radius: 14px; border: 1px solid var(--border); background: var(--panel); cursor: pointer; }
 .chip.active { background: var(--accent); color: #04121f; border-color: var(--accent); }
 
-table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
-th, td { text-align: left; padding: 4px 8px; white-space: nowrap; }
+/* table-layout: fixed + explicit <colgroup> widths (see App.tsx) so a panel
+   never needs horizontal scroll -- the Message column (usually the widest)
+   truncates with an ellipsis instead of forcing overflow. */
+table { width: 100%; table-layout: fixed; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 3px 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 th { color: var(--muted); font-weight: 600; position: sticky; top: 0; background: var(--bg); border-bottom: 1px solid var(--border); }
 tr.time-sep td { border-top: 2px solid #34618f; color: var(--muted); font-size: 11px; padding: 2px 8px; background: #131a21; font-variant-numeric: tabular-nums; }
 tr.cq td { color: #7ed492; }
