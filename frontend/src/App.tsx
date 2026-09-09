@@ -175,15 +175,37 @@ function DecodeScreen({
   );
 }
 
+// Classifies WSJT-Z's currently-queued tx_message the same way decode rows
+// are classified server-side (see the vendored parser's decode_exchange()) --
+// this is the read-only equivalent of which Tx1..Tx6 button would be lit up
+// in WSJT-Z's own window. There's no UDP field that says this directly, and
+// no way to see the other five candidate messages (WSJT-Z computes all six
+// from its own internal QSO state, only the active one is ever broadcast),
+// so this is inferred from the message text itself, not a real protocol field.
+function classifyTxStage(text: string): string {
+  if (!text) return "";
+  const parts = text.split(" ");
+  if (parts[0] === "CQ") return "CQ";
+  if (parts.length <= 2) return "";
+  const w = parts[2];
+  if (w === "73") return "73";
+  if (w === "RR73" || w === "RRR") return "RR73";
+  if (w.startsWith("+") || w.startsWith("-")) return "Report";
+  if (w.startsWith("R")) return "R+Report";
+  return "Grid";
+}
+
 function TxBar({ status, onStop }: { status: WsjtzStatus; onStop: () => void }) {
-  const stageLabel = status.transmitting ? "transmitting" : status.decoding ? "listening" : "stopped";
+  const rxTxLabel = status.transmitting ? "transmitting" : status.decoding ? "listening" : "stopped";
+  const txStage = classifyTxStage(status.tx_message);
   return (
     <div className="txbar">
       <span className={"badge " + (status.transmitting ? "tx" : "rx")}>
         {status.transmitting ? "TX" : "RX"}
       </span>
-      <span className="muted">{stageLabel}</span>
+      <span className="muted">{rxTxLabel}</span>
       {status.dx_call && <span className="muted">→ {status.dx_call}</span>}
+      {txStage && <span className="badge ok" title="Inferred from the message text -- WSJT-Z doesn't broadcast a stage number">{txStage}</span>}
       <span className="msg">{status.tx_message}</span>
       <div className="spacer" style={{ flex: 1 }} />
       <button className="danger" onClick={onStop} title="Sends WSJT-Z's HaltTx UDP command">
