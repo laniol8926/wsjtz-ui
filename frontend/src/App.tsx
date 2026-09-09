@@ -1,14 +1,12 @@
 import { Fragment, useEffect, useState } from "react";
 import { wsjtz, EMPTY_STATUS, type UiMessage, type WsjtzStatus } from "./ipc";
 
-type Filter = "all" | "cq" | "tome";
 const MAX_MESSAGES = 800;
 
 export default function App() {
   const [connected, setConnected] = useState(false);
   const [status, setStatus] = useState<WsjtzStatus>(EMPTY_STATUS);
   const [messages, setMessages] = useState<UiMessage[]>([]);
-  const [filter, setFilter] = useState<Filter>("all");
   const [utcNow, setUtcNow] = useState(new Date());
 
   useEffect(() => {
@@ -36,20 +34,11 @@ export default function App() {
     return () => clearInterval(t);
   }, []);
 
-  const visible = messages.filter((m) =>
-    filter === "all" ? true : filter === "cq" ? m.is_cq : m.to_me
-  );
-
   return (
     <>
       <TopBar connected={connected} status={status} utcNow={utcNow} />
       <div className="content decode">
-        <DecodeScreen
-          messages={visible}
-          filter={filter}
-          setFilter={setFilter}
-          onAnswer={(m) => wsjtz.answer(m)}
-        />
+        <DecodeScreen messages={messages} />
       </div>
       <TxBar status={status} onStop={() => wsjtz.stopTx()} />
       <div className="status-line">
@@ -95,25 +84,58 @@ function TopBar({
   );
 }
 
+// Three simultaneous panels instead of one list behind a filter toggle --
+// matching the Band Activity / CQ Panel / RX Frequency layout from the
+// zbitxd project (see project_ai5ii_qmx_app memory) and WSJT-Z's own window
+// (Band Activity + Rx Frequency side by side). A single "All" list behind a
+// filter chip meant the chip's selection could silently persist and leave
+// the whole screen looking empty/stale without it being obvious why.
 function DecodeScreen({
   messages,
-  filter,
-  setFilter,
-  onAnswer,
 }: {
   messages: UiMessage[];
-  filter: Filter;
-  setFilter: (f: Filter) => void;
-  onAnswer: (m: UiMessage) => void;
+}) {
+  const cqMessages = messages.filter((m) => m.is_cq);
+  const toMeMessages = messages.filter((m) => m.to_me);
+  return (
+    <div className="panels-row">
+      <MessagePanel
+        title="Band Activity"
+        messages={messages}
+        className="panel-band"
+        emptyText="No decodes yet — make sure WSJT-Z is running and decoding, and that ~/wsjtz-ui/backend/server.js is running."
+      />
+      <MessagePanel
+        title="CQ"
+        messages={cqMessages}
+        className="panel-col"
+        emptyText="No CQs decoded yet."
+      />
+      <MessagePanel
+        title="RX Frequency"
+        messages={toMeMessages}
+        className="panel-col"
+        emptyText="Nothing directed at your callsign yet."
+      />
+    </div>
+  );
+}
+
+function MessagePanel({
+  title,
+  messages,
+  className,
+  emptyText,
+}: {
+  title: string;
+  messages: UiMessage[];
+  className: string;
+  emptyText: string;
 }) {
   return (
-    <>
-      <div className="chips">
-        {(["all", "cq", "tome"] as Filter[]).map((f) => (
-          <div key={f} className={"chip" + (filter === f ? " active" : "")} onClick={() => setFilter(f)}>
-            {f === "all" ? "All" : f === "cq" ? "CQ" : "To me"}
-          </div>
-        ))}
+    <div className={className}>
+      <div className="panel-header">
+        {title} <span className="muted">({messages.length})</span>
       </div>
       <div className="decode-list">
         <table>
@@ -124,7 +146,6 @@ function DecodeScreen({
               <th>DT</th>
               <th>Hz</th>
               <th>Message</th>
-              <th></th>
             </tr>
           </thead>
           <tbody>
@@ -134,44 +155,30 @@ function DecodeScreen({
                 <Fragment key={i}>
                   {newBlock && (
                     <tr className="time-sep">
-                      <td colSpan={6}>{new Date(m.utc_ms).toISOString().substring(11, 19)} UTC</td>
+                      <td colSpan={5}>{new Date(m.utc_ms).toISOString().substring(11, 19)} UTC</td>
                     </tr>
                   )}
-                  <tr
-                    className={
-                      (m.is_cq ? "cq " : "") +
-                      (m.to_me ? "tome " : "") +
-                      (m.is_cq || m.to_me ? "clickable" : "")
-                    }
-                    onClick={() => (m.is_cq || m.to_me) && onAnswer(m)}
-                    title={
-                      m.is_cq || m.to_me
-                        ? "Click to answer (best-effort -- WSJT-Z doesn't always act on this, see project notes)"
-                        : ""
-                    }
-                  >
+                  <tr className={(m.is_cq ? "cq " : "") + (m.to_me ? "tome " : "")}>
                     <td>{new Date(m.utc_ms).toISOString().substring(11, 19)}</td>
                     <td>{m.snr}</td>
                     <td>{m.time_sec.toFixed(1)}</td>
                     <td>{Math.round(m.freq_hz)}</td>
                     <td>{m.text}</td>
-                    <td>{m.is_cq || m.to_me ? "↩ answer" : ""}</td>
                   </tr>
                 </Fragment>
               );
             })}
             {messages.length === 0 && (
               <tr>
-                <td colSpan={6} className="muted">
-                  No decodes yet — make sure WSJT-Z is running and decoding, and that
-                  ~/wsjtz-ui/backend/server.js is running.
+                <td colSpan={5} className="muted">
+                  {emptyText}
                 </td>
               </tr>
             )}
           </tbody>
         </table>
       </div>
-    </>
+    </div>
   );
 }
 

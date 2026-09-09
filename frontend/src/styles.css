@@ -76,9 +76,22 @@ select, input {
 
 .content { flex: 1; overflow: auto; padding: 14px; }
 
-/* Decode tab: keep the filter chips pinned, scroll only the table. */
 .content.decode { overflow: hidden; display: flex; flex-direction: column; }
-.content.decode .decode-list { flex: 1; overflow: auto; min-height: 0; }
+
+/* Three simultaneous panels (Band Activity / CQ / RX Frequency, matching
+   zbitxd's layout), side by side, instead of one list behind a filter
+   toggle. Band Activity gets more width (flex: 2) since it's the
+   highest-volume list; CQ and RX Frequency share the rest. Each panel
+   scrolls its own table independently. */
+.panels-row { flex: 1; display: flex; gap: 10px; min-height: 0; }
+.panel-band { flex: 2; display: flex; flex-direction: column; min-height: 0; }
+.panel-col { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.panel-header {
+  font-size: 11px; color: var(--muted); text-transform: uppercase;
+  letter-spacing: 0.5px; padding-bottom: 4px; border-bottom: 1px solid var(--border);
+  margin-bottom: 4px; flex-shrink: 0;
+}
+.panel-band .decode-list, .panel-col .decode-list { flex: 1; overflow: auto; min-height: 0; }
 
 .row { display: flex; align-items: center; gap: 10px; }
 .col { display: flex; flex-direction: column; gap: 8px; }
