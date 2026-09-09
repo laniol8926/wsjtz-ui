@@ -1,0 +1,11 @@
+[Unit]
+Description=wsjtz-ui backend (WSJT-Z UDP <-> WebSocket bridge)
+
+[Service]
+WorkingDirectory=%h/wsjtz-ui/backend
+ExecStart=/usr/bin/node server.js
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=default.target

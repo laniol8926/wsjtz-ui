@@ -1,0 +1,12 @@
+[Unit]
+Description=wsjtz-ui frontend (Vite dev server)
+After=wsjtz-backend.service
+
+[Service]
+WorkingDirectory=%h/wsjtz-ui/frontend
+ExecStart=/usr/bin/node node_modules/.bin/vite
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=default.target
