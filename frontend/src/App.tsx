@@ -38,7 +38,7 @@ export default function App() {
     <>
       <TopBar connected={connected} status={status} utcNow={utcNow} />
       <div className="content decode">
-        <DecodeScreen messages={messages} />
+        <DecodeScreen messages={messages} status={status} />
       </div>
       <TxBar status={status} onStop={() => wsjtz.stopTx()} />
       <div className="status-line">
@@ -92,8 +92,10 @@ function TopBar({
 // the whole screen looking empty/stale without it being obvious why.
 function DecodeScreen({
   messages,
+  status,
 }: {
   messages: UiMessage[];
+  status: WsjtzStatus;
 }) {
   const cqMessages = messages.filter((m) => m.is_cq);
   const toMeMessages = messages.filter((m) => m.to_me);
@@ -116,6 +118,7 @@ function DecodeScreen({
         messages={toMeMessages}
         className="panel-col"
         emptyText="Nothing directed at your callsign yet."
+        liveTx={status.tx_message}
       />
     </div>
   );
@@ -126,17 +129,31 @@ function MessagePanel({
   messages,
   className,
   emptyText,
+  liveTx,
 }: {
   title: string;
   messages: UiMessage[];
   className: string;
   emptyText: string;
+  /** Your own current outgoing message (WSJT-Z's Status.tx_message), shown
+   *  pinned above the decoded list. WSJT-Z never broadcasts our own
+   *  transmissions as a Decode message (Decode is receive-only), so without
+   *  this the panel goes blank while calling CQ and waiting for a reply --
+   *  matching a real zbitxd fix ("show our own outgoing CQ in RX Frequency
+   *  itself while waiting", see project_ai5ii_qmx_app memory). Not a
+   *  decode, so it has no real SNR/DT/Hz to show. */
+  liveTx?: string;
 }) {
   return (
     <div className={className}>
       <div className="panel-header">
         {title} <span className="muted">({messages.length})</span>
       </div>
+      {liveTx && (
+        <div className="panel-live-tx" title="Your current outgoing message -- not a received decode, WSJT-Z never broadcasts its own transmissions as one">
+          → {liveTx}
+        </div>
+      )}
       <div className="decode-list">
         <table>
           <colgroup>

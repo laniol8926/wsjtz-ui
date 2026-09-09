@@ -90,6 +90,12 @@ select, input {
   margin-bottom: 4px; flex-shrink: 0;
 }
 .panel-band .decode-list, .panel-col .decode-list { flex: 1; overflow: auto; min-height: 0; }
+.panel-live-tx {
+  flex-shrink: 0; padding: 4px 6px; margin-bottom: 4px; border-radius: 4px;
+  background: rgba(78,161,255,0.12); border: 1px solid var(--accent);
+  color: var(--accent); font-family: "Cascadia Code", monospace;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
 
 .row { display: flex; align-items: center; gap: 10px; }
 .col { display: flex; flex-direction: column; gap: 8px; }
